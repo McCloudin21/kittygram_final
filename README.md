@@ -1,6 +1,6 @@
 # Социальная сеть kittygram
 
-![workflow](https://github.com/PARTYNEXTDOORS/kittygram_final/actions/workflows/main.yml/badge.svg)
+![workflow](https://github.com/McCloudin21/kittygram_final/actions/workflows/main.yml/badge.svg)
 
 ___
 
@@ -24,7 +24,7 @@ ___
 1. Клонируйте репозиторий на свой компьютер:
 
     ```bash
-    git clone git@github.com:PARTYNEXTDOORS/kittygram_final.git
+    git clone git@github.com:McCloudin21/kittygram_final.git
     ```
     ```bash
     cd kittygram
