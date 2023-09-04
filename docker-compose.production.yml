@@ -12,19 +12,19 @@ services:
     volumes:
       - kittygram_production:/var/lib/postgresql/data
   backend:
-    image: mccloudin/kitty_backend
+    image: mccloudin/kittygram_backend
     env_file: .env
     volumes:
       - static_volume:/backend_static
       - media:/app/media/
   frontend:
-    image: mccloudin/kitty_frontend
+    image: mccloudin/kittygram_frontend
     env_file: .env
     command: cp -r /app/build/. /frontend_static/
     volumes:
       - static_volume:/frontend_static
   gateway:
-    image: mccloudin/kitty_nginx
+    image: mccloudin/kittygram_gateway
     env_file: .env
     volumes:
       - static_volume:/static/
