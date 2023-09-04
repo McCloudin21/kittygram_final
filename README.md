@@ -1,26 +1,187 @@
-#  РљР°Рє СЂР°Р±РѕС‚Р°С‚СЊ СЃ СЂРµРїРѕР·РёС‚РѕСЂРёРµРј С„РёРЅР°Р»СЊРЅРѕРіРѕ Р·Р°РґР°РЅРёСЏ
+# Социальная сеть kittygram
 
-## Р§С‚Рѕ РЅСѓР¶РЅРѕ СЃРґРµР»Р°С‚СЊ
+![workflow](https://github.com/PARTYNEXTDOORS/kittygram_final/actions/workflows/main.yml/badge.svg)
 
-РќР°СЃС‚СЂРѕРёС‚СЊ Р·Р°РїСѓСЃРє РїСЂРѕРµРєС‚Р° Kittygram РІ РєРѕРЅС‚РµР№РЅРµСЂР°С… Рё CI/CD СЃ РїРѕРјРѕС‰СЊСЋ GitHub Actions
+___
 
-## РљР°Рє РїСЂРѕРІРµСЂРёС‚СЊ СЂР°Р±РѕС‚Сѓ СЃ РїРѕРјРѕС‰СЊСЋ Р°РІС‚РѕС‚РµСЃС‚РѕРІ
+### Стэк
 
-Р’ РєРѕСЂРЅРµ СЂРµРїРѕР·РёС‚РѕСЂРёСЏ СЃРѕР·РґР°Р№С‚Рµ С„Р°Р№Р» tests.yml СЃРѕ СЃР»РµРґСѓСЋС‰РёРј СЃРѕРґРµСЂР¶РёРјС‹Рј:
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![DjangoREST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=blue) ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white) ![Gunicorn](https://img.shields.io/badge/gunicorn-%298729.svg?style=for-the-badge&logo=gunicorn&logoColor=white) ![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+
+___
+### Описание проекта 
+Kittygram - сервис для любителей котиков.
+
+Что умеет проект:
+
+- Добавлять, просматривать, редактировать и удалять котиков.
+- Добавлять новые и присваивать уже существующие достижения. 
+- Просматривать чужих котов и их достижения.
+
+___
+## Установка 
+
+1. Клонируйте репозиторий на свой компьютер:
+
+    ```bash
+    git clone git@github.com:PARTYNEXTDOORS/kittygram_final.git
+    ```
+    ```bash
+    cd kittygram
+    ```
+2. Создайте файл .env и заполните его своими данными. Перечень данных указан в корневой директории проекта в файле .env.example.
+
+___
+### Создание Docker-образов
+
+1.  Замените username на ваш логин на DockerHub:
+
+    ```bash
+    cd frontend
+    docker build -t username/kittygram_frontend .
+    cd ../backend
+    docker build -t username/kittygram_backend .
+    cd ../nginx
+    docker build -t username/kittygram_gateway . 
+    ```
+
+2. Загрузите образы на DockerHub:
+
+    ```bash
+    docker push username/kittygram_frontend
+    docker push username/kittygram_backend
+    docker push username/kittygram_gateway
+    ```
+
+___
+### Деплой на сервере
+
+1. Подключитесь к удаленному серверу
+
+    ```bash
+    ssh -i путь_до_файла_с_SSH_ключом/название_файла_с_SSH_ключом имя_пользователя@ip_адрес_сервера 
+    ```
+
+2. Создайте на сервере директорию kittygram через терминал
+
+    ```bash
+    mkdir kittygram
+    ```
+
+3. Установка docker compose на сервер:
+
+    ```bash
+    sudo apt update
+    sudo apt install curl
+    curl -fSL https://get.docker.com -o get-docker.sh
+    sudo sh ./get-docker.sh
+    sudo apt-get install docker-compose-plugin
+    ```
+
+4. В директорию kittygram/ скопируйте файлы docker-compose.production.yml и .env:
+
+    ```bash
+    scp -i path_to_SSH/SSH_name docker-compose.production.yml username@server_ip:/home/username/kittygram/docker-compose.production.yml
+    * ath_to_SSH — путь к файлу с SSH-ключом;
+    * SSH_name — имя файла с SSH-ключом (без расширения);
+    * username — ваше имя пользователя на сервере;
+    * server_ip — IP вашего сервера.
+    ```
+
+5. Запустите docker compose в режиме демона:
+
+    ```bash
+    sudo docker compose -f docker-compose.production.yml up -d
+    ```
+
+6. Выполните миграции, соберите статические файлы бэкенда и скопируйте их в /backend_static/static/:
+
+    ```bash
+    sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+    sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+    sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+    ```
+
+7. На сервере в редакторе nano откройте конфиг Nginx:
+
+    ```bash
+    sudo nano /etc/nginx/sites-enabled/default
+    ```
+
+8. Измените настройки location в секции server:
+
+    ```bash
+    location / {
+        proxy_set_header Host $http_host;
+        proxy_pass http://127.0.0.1:9000;
+    }
+    ```
+
+9. Проверьте работоспособность конфига Nginx:
+
+    ```bash
+    sudo nginx -t
+    ```
+    Если ответ в терминале такой, значит, ошибок нет:
+    ```bash
+    nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+    nginx: configuration file /etc/nginx/nginx.conf test is successful
+    ```
+
+10. Перезапускаем Nginx
+    ```bash
+    sudo service nginx reload
+    ```
+
+___
+### Настройка CI/CD
+
+1. Файл workflow уже написан. Он находится в директории
+
+    ```bash
+    kittygram/.github/workflows/main.yml
+    ```
+
+2. Для адаптации его на своем сервере добавьте секреты в GitHub Actions:
+
+    ```bash
+    DOCKER_USERNAME                # имя пользователя в DockerHub
+    DOCKER_PASSWORD                # пароль пользователя в DockerHub
+    HOST                           # ip_address сервера
+    USER                           # имя пользователя
+    SSH_KEY                        # приватный ssh-ключ (cat ~/.ssh/id_rsa)
+    SSH_PASSPHRASE                 # кодовая фраза (пароль) для ssh-ключа
+
+    TELEGRAM_TO                    # id телеграм-аккаунта (можно узнать у @userinfobot, команда /start)
+    TELEGRAM_TOKEN                 # токен бота (получить токен можно у @BotFather, /token, имя бота)
+    ```
+
+___
+###  Как работать с репозиторием финального задания
+
+#### Что нужно сделать
+
+Настроить запуск проекта Kittygram в контейнерах и CI/CD с помощью GitHub Actions
+
+#### Как проверить работу с помощью автотестов
+
+В корне репозитория создайте файл tests.yml со следующим содержимым:
 ```yaml
-repo_owner: РІР°С€_Р»РѕРіРёРЅ_РЅР°_РіРёС‚С…Р°Р±Рµ
-kittygram_domain: РїРѕР»РЅР°СЏ СЃСЃС‹Р»РєР° (https://РґРѕРјРµРЅРЅРѕРµ_РёРјСЏ) РЅР° РІР°С€ РїСЂРѕРµРєС‚ Kittygram
-taski_domain: РїРѕР»РЅР°СЏ СЃСЃС‹Р»РєР° (https://РґРѕРјРµРЅРЅРѕРµ_РёРјСЏ) РЅР° РІР°С€ РїСЂРѕРµРєС‚ Taski
-dockerhub_username: РІР°С€_Р»РѕРіРёРЅ_РЅР°_РґРѕРєРµСЂС…Р°Р±Рµ
+repo_owner: ваш_логин_на_гитхабе
+kittygram_domain: полная ссылка (https://доменное_имя) на ваш проект Kittygram
+taski_domain: полная ссылка (https://доменное_имя) на ваш проект Taski
+dockerhub_username: ваш_логин_на_докерхабе
 ```
 
-РЎРєРѕРїРёСЂСѓР№С‚Рµ СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р° `.github/workflows/main.yml` РІ С„Р°Р№Р» `kittygram_workflow.yml` РІ РєРѕСЂРЅРµРІРѕР№ РґРёСЂРµРєС‚РѕСЂРёРё РїСЂРѕРµРєС‚Р°.
+Скопируйте содержимое файла `.github/workflows/main.yml` в файл `kittygram_workflow.yml` в корневой директории проекта.
 
-Р”Р»СЏ Р»РѕРєР°Р»СЊРЅРѕРіРѕ Р·Р°РїСѓСЃРєР° С‚РµСЃС‚РѕРІ СЃРѕР·РґР°Р№С‚Рµ РІРёСЂС‚СѓР°Р»СЊРЅРѕРµ РѕРєСЂСѓР¶РµРЅРёРµ, СѓСЃС‚Р°РЅРѕРІРёС‚Рµ РІ РЅРµРіРѕ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РёР· backend/requirements.txt Рё Р·Р°РїСѓСЃС‚РёС‚Рµ РІ РєРѕСЂРЅРµРІРѕР№ РґРёСЂРµРєС‚РѕСЂРёРё РїСЂРѕРµРєС‚Р° `pytest`.
+Для локального запуска тестов создайте виртуальное окружение, установите в него зависимости из backend/requirements.txt и запустите в корневой директории проекта `pytest`.
 
-## Р§РµРє-Р»РёСЃС‚ РґР»СЏ РїСЂРѕРІРµСЂРєРё РїРµСЂРµРґ РѕС‚РїСЂР°РІРєРѕР№ Р·Р°РґР°РЅРёСЏ
+#### Чек-лист для проверки перед отправкой задания
 
-- РџСЂРѕРµРєС‚ Taski РґРѕСЃС‚СѓРїРµРЅ РїРѕ РґРѕРјРµРЅРЅРѕРјСѓ РёРјРµРЅРё, СѓРєР°Р·Р°РЅРЅРѕРјСѓ РІ `tests.yml`.
-- РџСЂРѕРµРєС‚ Kittygram РґРѕСЃС‚СѓРїРµРЅ РїРѕ РґРѕРјРµРЅРЅРѕРјСѓ РёРјРµРЅРё, СѓРєР°Р·Р°РЅРЅРѕРјСѓ РІ `tests.yml`.
-- РџСѓС€ РІ РІРµС‚РєСѓ main Р·Р°РїСѓСЃРєР°РµС‚ С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ Рё РґРµРїР»РѕР№ Kittygram, Р° РїРѕСЃР»Рµ СѓСЃРїРµС€РЅРѕРіРѕ РґРµРїР»РѕСЏ РІР°Рј РїСЂРёС…РѕРґРёС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ С‚РµР»РµРіСЂР°Рј.
-- Р’ РєРѕСЂРЅРµ РїСЂРѕРµРєС‚Р° РµСЃС‚СЊ С„Р°Р№Р» `kittygram_workflow.yml`.
+- Проект Taski доступен по доменному имени, указанному в `tests.yml`.
+- Проект Kittygram доступен по доменному имени, указанному в `tests.yml`.
+- Пуш в ветку main запускает тестирование и деплой Kittygram, а после успешного деплоя вам приходит сообщение в телеграм.
+- В корне проекта есть файл `kittygram_workflow.yml`.
+
+Автор: [Сергей Андреев](https://github.com/McCloudin21) :+1:
