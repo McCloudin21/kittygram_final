@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
+from distutils.util import strtobool
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='token')
 
-DEBUG = os.getenv('DEBUG', default=False)
+DEBUG = strtobool(os.getenv("DEBUG", "false"))
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOST', default='127.0.0.1, localhost').split(', ')
 
